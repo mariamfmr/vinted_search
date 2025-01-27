@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Find similar items</title>
+    <link href="https://fonts.googleapis.com/css2?family=Instrumental+Serif:wght@400;700&family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .content {
+            text-align: center;
+            padding: 2rem;
+        }
+        .title {
+            font-family: 'Instrumental Serif', serif;
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+            color: #017783;
+        }
+        .subtitle {
+            font-size: 1.25rem;
+            margin-bottom: 2rem;
+            color: #333;
+        }
+        .upload-form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+        }
+        .upload-form input[type="file"] {
+            padding: 0.5rem;
+            font-size: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            width: 100%;
+            max-width: 300px;
+        }
+        .size-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 1rem;
+        }
+        .size-button {
+            background-color: #017783;
+            color: white;
+            padding: 1rem 2rem;
+            text-decoration: none;
+            border-radius: 24px;
+            font-size: 1.25rem;
+            transition: background-color 0.3s ease;
+            cursor: pointer;
+            display: inline-block;
+        }
+        .size-button:hover {
+            background-color: #015b63;
+        }
+        .size-button.selected {
+            background-color: #015b63;
+        }
+        .custom-size {
+            margin-top: 1rem;
+        }
+        .upload-button {
+            display: inline-block;
+            background-color: #017783;
+            color: white;
+            padding: 1rem 2rem;
+            text-decoration: none;
+            border-radius: 24px;
+            font-size: 1.25rem;
+            transition: background-color 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+        .upload-button:hover {
+            background-color: #015b63;
+        }
+        /* Profile Icon */
+        .profile-info {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: #017783;
+            color: white;
+            border-radius: 24px;
+            padding: 0.5rem 1rem;
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            transition: background-color 0.3s ease;
+        }
+        .profile-info .icon {
+            margin-left: 0.5rem;
+            font-size: 1.25rem;
+        }
+        .profile-info:hover {
+            background-color: #015b63;
+        }
+
+        /* Sliding Panel */
+        .sliding-panel {
+            position: fixed;
+            top: 0;
+            right: -300px;
+            width: 300px;
+            height: 100%;
+            background-color: #017783;
+            color: white;
+            padding: 2rem;
+            transition: right 0.3s ease;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+        }
+        .sliding-panel.open {
+            right: 0;
+            opacity: 1;
+            visibility: visible;
+        }
+        .sliding-panel h2 {
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .close-panel {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0;
+        }
+        .sliding-panel button.menu-button {
+            background-color: #015b63;
+            color: white;
+            border: none;
+            padding: 1rem;
+            font-size: 1.25rem;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 1rem;
+            border-radius: 8px;
+            transition: background-color 0.3s ease;
+        }
+        .sliding-panel button.menu-button:hover {
+            background-color: #013f43;
+        }
+    </style>
+</head>
+<body>
+    <div class="content">
+        <p class="subtitle">Find items by image:</p>
+        <form class="upload-form" action="{{ url_for('upload', main_category=main_category, subcategory=subcategory) }}" method="post" enctype="multipart/form-data">
+            <input type="file" name="image" accept="image/*" required>
+            <div class="size-buttons">
+                {% if subcategory == 'Jeans' or subcategory == 'Pants' or subcategory == 'Shorts' %}
+                    <button type="button" class="size-button" data-size="32">32</button>
+                    <button type="button" class="size-button" data-size="34">34</button>
+                    <button type="button" class="size-button" data-size="36">36</button>
+                    <button type="button" class="size-button" data-size="38">38</button>
+                    <button type="button" class="size-button" data-size="40">40</button>
+                    <button type="button" class="size-button" data-size="42">42</button>
+                    <button type="button" class="size-button" data-size="44">44</button>
+                    <button type="button" class="size-button" data-size="46">46</button>
+                {% elif subcategory == 'Tops' or subcategory == 'Dresses' or subcategory == 'Sweaters' or subcategory == 'Blouses' or subcategory == 'Skirts' or subcategory == 'Jumpsuits' or subcategory == 'Suits' %}
+                    <button type="button" class="size-button" data-size="XS">XS</button>
+                    <button type="button" class="size-button" data-size="S">S</button>
+                    <button type="button" class="size-button" data-size="M">M</button>
+                    <button type="button" class="size-button" data-size="L">L</button>
+                    <button type="button" class="size-button" data-size="XL">XL</button>
+                {% elif subcategory == 'Activewear' or subcategory == 'Sleepwear' or subcategory == 'Swimwear' or subcategory == 'Leggings' %}
+                    <button type="button" class="size-button" data-size="XS">XS</button>
+                    <button type="button" class="size-button" data-size="S">S</button>
+                    <button type="button" class="size-button" data-size="M">M</button>
+                    <button type="button" class="size-button" data-size="L">L</button>
+                    <button type="button" class="size-button" data-size="XL">XL</button>
+                {% elif subcategory == 'Jackets' or subcategory == 'Outerwear' %}
+                    <button type="button" class="size-button" data-size="XS">XS</button>
+                    <button type="button" class="size-button" data-size="S">S</button>
+                    <button type="button" class="size-button" data-size="M">M</button>
+                    <button type="button" class="size-button" data-size="L">L</button>
+                    <button type="button" class="size-button" data-size="XL">XL</button>
+                {% elif subcategory == 'Shoes' %}
+                    <button type="button" class="size-button" data-size="6">6</button>
+                    <button type="button" class="size-button" data-size="7">7</button>
+                    <button type="button" class="size-button" data-size="8">8</button>
+                    <button type="button" class="size-button" data-size="9">9</button>
+                    <button type="button" class="size-button" data-size="10">10</button>
+                    <button type="button" class="size-button" data-size="11">11</button>
+                {% elif subcategory == 'Bags' or subcategory == 'Accessories' %}
+                    <!-- No specific sizing here, could be custom options like "One Size" -->
+                    <button type="button" class="size-button" data-size="OS">One Size</button>
+                {% endif %}
+            </div>
+            <div class="custom-size">
+                or <input type="text" name="custom_size" placeholder="Enter custom size" />
+            </div>
+            <button type="submit" class="upload-button">Upload</button>
+        </form>
+    </div>
+    <script>
+        const sizeButtons = document.querySelectorAll('.size-button');
+        const selectedSizes = new Set();
+
+        sizeButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const size = button.getAttribute('data-size');
+                if (selectedSizes.has(size)) {
+                    selectedSizes.delete(size);
+                    button.classList.remove('selected');
+                } else {
+                    selectedSizes.add(size);
+                    button.classList.add('selected');
+                }
+            });
+        });
+
+        document.querySelector('.upload-form').addEventListener('submit', function(event) {
+            const sizesArray = Array.from(selectedSizes);
+            if (sizesArray.length > 0) {
+                let sizeInput = document.createElement('input');
+                sizeInput.type = 'hidden';
+                sizeInput.name = 'size';
+                sizeInput.value = sizesArray.join(',');
+                this.appendChild(sizeInput);
+            }
+        });
+    </script>
+    <!-- Profile Icon with Username -->
+    <div class="profile-info" onclick="togglePanel()">
+        <span>{{ username }}</span>
+        <span class="icon">👤</span>
+    </div>
+
+    <!-- Sliding Panel -->
+    <div class="sliding-panel" id="slidingPanel">
+        <h2>
+            Welcome, {{ username }}!
+            <button class="close-panel" onclick="togglePanel()">&times;</button>
+        </h2>
+        <button class="menu-button" onclick="window.location.href='{{ url_for('saved_items') }}'">My Items</button>
+        <button class="menu-button">My Outfits</button>
+    </div>
+
+    <script>
+        function togglePanel() {
+            const panel = document.getElementById('slidingPanel');
+            panel.classList.toggle('open');
+        }
+    </script>
+</body>
+</html>

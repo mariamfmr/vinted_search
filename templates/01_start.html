@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VintedVision - Start</title>
+    <link href="https://fonts.googleapis.com/css2?family=Instrumental+Serif:wght@400;700&family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .content {
+            text-align: center;
+            padding: 2rem;
+        }
+        .title {
+            font-family: 'Instrumental Serif', serif;
+            font-size: 3rem;
+            color: #017783;
+            margin-bottom: 0.5rem;
+        }
+        .subtitle {
+            font-size: 1.25rem;
+            color: #333;
+            margin-bottom: 2rem;
+        }
+        .start-button {
+            display: inline-block;
+            background-color: #017783;
+            color: white;
+            padding: 1rem 2rem;
+            text-decoration: none;
+            border-radius: 24px;
+            font-size: 1.25rem;
+            transition: background-color 0.3s ease;
+        }
+        .start-button:hover {
+            background-color: #015b63;
+        }
+    </style>
+</head>
+<body>
+    <div class="content">
+        <h1 class="title">VintedVision</h1>
+        <p class="subtitle">A space to save and organize your favorite Vinted items.</p>
+        <a href="{{ url_for('category_main') }}" class="start-button">Start Searching</a>
+    </div>
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

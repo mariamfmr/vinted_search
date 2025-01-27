@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Similarity Results</title>
+    <link href="https://fonts.googleapis.com/css2?family=Instrumental+Serif:wght@400;700&family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f0f0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem;
+        }
+        .title {
+            font-family: 'Instrumental Serif', serif;
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: #017783;
+        }
+        .subtitle {
+            font-size: 1.25rem;
+            margin-bottom: 2rem;
+            color: #333;
+        }
+        .uploaded-image {
+            margin-bottom: 2rem;
+        }
+        .uploaded-image img {
+            max-width: 300px;
+            border-radius: 8px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .results-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            width: 100%;
+            max-width: 1200px;
+        }
+        .result-item {
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 1rem;
+            text-align: center;
+        }
+        .result-item img {
+            max-width: 100%;
+            border-radius: 8px;
+        }
+        .result-item h3 {
+            font-size: 1rem;
+            margin: 0.5rem 0;
+            color: #017783;
+        }
+        .result-item p {
+            margin: 0.5rem 0;
+            font-size: 0.9rem;
+            color: #555;
+        }
+        .result-item a {
+            text-decoration: none;
+            color: #017783;
+            font-weight: bold;
+            font-size: 1rem;
+        }
+        /* Profile Icon */
+        .profile-info {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: #017783;
+            color: white;
+            border-radius: 24px;
+            padding: 0.5rem 1rem;
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            transition: background-color 0.3s ease;
+        }
+        .profile-info .icon {
+            margin-left: 0.5rem;
+            font-size: 1.25rem;
+        }
+        .profile-info:hover {
+            background-color: #015b63;
+        }
+
+        /* Sliding Panel */
+        .sliding-panel {
+            position: fixed;
+            top: 0;
+            right: -300px;
+            width: 300px;
+            height: 100%;
+            background-color: #017783;
+            color: white;
+            padding: 2rem;
+            transition: right 0.3s ease;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+        }
+        .sliding-panel.open {
+            right: 0;
+            opacity: 1;
+            visibility: visible;
+        }
+        .sliding-panel h2 {
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .close-panel {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0;
+        }
+        .sliding-panel button.menu-button {
+            background-color: #015b63;
+            color: white;
+            border: none;
+            padding: 1rem;
+            font-size: 1.25rem;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 1rem;
+            border-radius: 8px;
+            transition: background-color 0.3s ease;
+        }
+        .sliding-panel button.menu-button:hover {
+            background-color: #013f43;
+        }
+    </style>
+</head>
+<body>
+    <h1 class="title">VintedVision</h1>
+
+    <!-- Uploaded Image -->
+    <div class="uploaded-image">
+        <p class="subtitle">Uploaded Image</p>
+        <img src="{{ url_for('static', filename='uploads/' + query) }}" alt="Uploaded Image">
+    </div>
+
+    <!-- Results -->
+    <div>
+        <p class="subtitle">Similar Items</p>
+        <div class="results-container">
+            {% if results %}
+                {% for item in results %}
+                    <div class="result-item">
+                        <img src="{{ item.image_url }}" alt="{{ item.title }}">
+                        <h3>{{ item.title }}</h3>
+                        <p>Similarity Score: {{ item.similarity | round(2) }}</p>
+                        <a href="{{ item.url }}" target="_blank">View Item</a>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p>No similar items found.</p>
+            {% endif %}
+        </div>
+    </div>
+    <!-- Profile Icon with Username -->
+    <div class="profile-info" onclick="togglePanel()">
+        <span>{{ username }}</span>
+        <span class="icon">👤</span>
+    </div>
+
+    <!-- Sliding Panel -->
+    <div class="sliding-panel" id="slidingPanel">
+        <h2>
+            Welcome, {{ username }}!
+            <button class="close-panel" onclick="togglePanel()">&times;</button>
+        </h2>
+        <button class="menu-button" onclick="window.location.href='{{ url_for('saved_items') }}'">My Items</button>
+        <button class="menu-button">My Outfits</button>
+    </div>
+
+    <script>
+        function togglePanel() {
+            const panel = document.getElementById('slidingPanel');
+            panel.classList.toggle('open');
+        }
+    </script>
+</body>
+</html>

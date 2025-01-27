@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VintedVision - Sign Up</title>
+    <link href="https://fonts.googleapis.com/css2?family=Instrumental+Serif:wght@400;700&family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .content {
+            text-align: center;
+            padding: 2rem;
+        }
+        .title {
+            font-family: 'Instrumental Serif', serif;
+            font-size: 3rem;
+            color: #017783;
+            margin-bottom: 0.5rem;
+        }
+        .subtitle {
+            font-size: 1.25rem;
+            color: #333;
+            margin-bottom: 2rem;
+        }
+        .register-form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+        }
+        .register-form input[type="text"],
+        .register-form input[type="password"] {
+            padding: 0.75rem;
+            font-size: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            width: 100%;
+            max-width: 300px;
+        }
+        .register-button {
+            display: inline-block;
+            background-color: #017783;
+            color: white;
+            padding: 1rem 2rem;
+            text-decoration: none;
+            border-radius: 24px;
+            font-size: 1.25rem;
+            transition: background-color 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+        .register-button:hover {
+            background-color: #015b63;
+        }
+        .login-link {
+            font-size: 1rem;
+            color: #017783;
+            text-decoration: none;
+            margin-top: 1rem;
+        }
+        .login-link:hover {
+            text-decoration: underline;
+        }
+        .flash-message {
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .flash-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .flash-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+    <div class="content">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-message flash-{{ category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        <h1 class="title">Create Your Account</h1>
+        <p class="subtitle">Sign up to get started with saving your items and personalized searches.</p>
+        <form class="register-form" action="{{ url_for('register') }}" method="POST">
+            <input type="text" name="username" placeholder="Username" required>
+            <input type="password" name="password" placeholder="Password" required>
+            <button type="submit" class="register-button">Sign Up</button>
+        </form>
+        <a href="{{ url_for('login') }}" class="login-link">Already have an account? Log in here</a>
+    </div>
+</body>
+</html>

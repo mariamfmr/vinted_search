@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Saved Items</title>
+    <link href="https://fonts.googleapis.com/css2?family=Instrumental+Serif:wght@400;700&family=Inter:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <h1>My Saved Items</h1>
+    <ul>
+        {% for item in saved_items %}
+            <li>
+                <strong>{{ item[2] }}</strong>
+                <p>{{ item[3] }}</p>
+            </li>
+        {% else %}
+            <li>No saved items found.</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

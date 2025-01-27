@@ -1,0 +1,72 @@
+/* Root variables for consistent theming */
+:root {
+    --background-color: white;
+    --text-color: #333;
+    --button-background: #017783;
+    --button-hover: #015b63;
+    --button-text-color: white;
+    --accent-color: #017783;
+}
+
+/* Importing Google Fonts for typography */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Instrumental+Serif:wght@400;700&display=swap');
+
+/* Global reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Body styling */
+body {
+    font-family: 'Inter', sans-serif;
+    background: var(--background-color);
+    min-height: 100vh;
+    color: var(--text-color);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+/* Container for content */
+.container {
+    width: 100%;
+    max-width: 400px;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Title styling for all pages */
+.title {
+    font-family: 'Instrumental Serif', serif;
+    font-size: 2.5rem; /* Matches the first page subtitle */
+    margin-bottom: 15px;
+    color: var(--accent-color);
+}
+
+/* Button styling (shared across categories and actions) */
+.button {
+    background: var(--button-background);
+    color: var(--button-text-color);
+    padding: 15px 30px;
+    border: none;
+    border-radius: 8px;
+    font-family: 'Inter', sans-serif;
+    font-size: 1rem;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background 0.3s, transform 0.2s;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    display: inline-block;
+    margin-bottom: 15px;
+    width: 100%;
+    text-align: center;
+}
+
+.button:hover {
+    background: var(--button-hover);
+    transform: scale(1.05);
+}
