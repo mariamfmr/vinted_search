@@ -13,6 +13,8 @@ app.secret_key = os.urandom(24)  # Secure random secret key
 UPLOAD_FOLDER = 'static/uploads/'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['DATABASE'] = 'database/login.db'
+
 
 vinted = VintedScraper(baseurl='https://www.vinted.com')
 
@@ -27,19 +29,38 @@ def hash_password(password):
 
 def connect_db():
     return sqlite3.connect('database/login.db')
-
+    
 
 def init_db():
-    with connect_db() as conn:
-        cursor = conn.cursor()
-        cursor.execute('''
-        CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT NOT NULL UNIQUE,
-            password TEXT NOT NULL
-        )
-        ''')
-        conn.commit()
+    conn = connect_db()
+    cursor = conn.cursor()
+
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT NOT NULL UNIQUE,
+        password TEXT NOT NULL
+    );
+    ''')
+
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS saved_items (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        item_name TEXT, -- Add this column if needed
+        item_url TEXT NOT NULL,
+        image_url TEXT,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    );
+    ''')
+
+    conn.commit()
+    conn.close()
+
+init_db()
+if __name__ == "__main__":
+    init_db()
+
 
 @app.route('/')
 def start():
@@ -122,60 +143,112 @@ def logout():
     session.pop('username', None)
     return redirect(url_for('start'))
 
-@app.route('/save_item/<item_id>', methods=['POST'])
-def save_item(item_id):
+# Update the save_item route in app.py
+# Update the save_item route in app.py
+# Update the save_item route in app.py
+@app.route('/save-item', methods=['POST'])
+def save_item():
     if 'username' not in session:
-        flash("Please log in to save items.", "error")
-        return redirect(url_for('login'))
+        return {'status': 'error', 'message': 'Please log in to save items.'}, 401
 
-    # Fetch the user_id for the logged-in user
-    username = session['username']
-    with connect_db() as conn:
-        cursor = conn.cursor()
-        cursor.execute("SELECT id FROM users WHERE username = ?", (username,))
-        user = cursor.fetchone()
+    try:
+        data = request.get_json()
+        item_url = data.get('url')
+        image_url = data.get('image_url')
+        item_name = data.get('title')  # Get the title from the request
 
-        if user:
-            user_id = user[0]
-            # Fetch the item details from the vinted API or stored item
-            item = vinted.get_item_details(item_id)  # Assuming you have a method to fetch item details by id
-            item_name = item['name']
-            item_details = item.get('details', 'No details available')
+        if not item_url or not image_url or not item_name:
+            return {'status': 'error', 'message': 'Missing required item information'}, 400
 
-            # Save the item in the database
-            cursor.execute("INSERT INTO saved_items (user_id, item_name, item_details) VALUES (?, ?, ?)", 
-                           (user_id, item_name, item_details))
-            conn.commit()
+        username = session['username']
+        with connect_db() as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT id FROM users WHERE username = ?", (username,))
+            user = cursor.fetchone()
 
-            flash(f"{item_name} has been saved!", "success")
-            return redirect(url_for('saved_items'))
-        else:
-            flash("User not found", "error")
-            return redirect(url_for('category_main'))
+            if user:
+                user_id = user[0]
+                # Check if item already exists for this user
+                cursor.execute("SELECT id FROM saved_items WHERE user_id = ? AND item_url = ?", 
+                             (user_id, item_url))
+                existing_item = cursor.fetchone()
+                
+                if existing_item:
+                    return {'status': 'error', 'message': 'Item already saved'}, 400
 
+                # Save the item with all details including the title
+                cursor.execute("""
+                    INSERT INTO saved_items (user_id, item_name, item_url, image_url) 
+                    VALUES (?, ?, ?, ?)""", 
+                    (user_id, item_name, item_url, image_url))
+                conn.commit()
+                return {'status': 'success', 'message': 'Item saved successfully'}, 200
+            else:
+                return {'status': 'error', 'message': 'User not found'}, 404
 
+    except Exception as e:
+        print(f"Error saving item: {str(e)}")  # For debugging
+        return {'status': 'error', 'message': 'Failed to save item'}, 500
+    
 @app.route('/saved_items')
 def saved_items():
     if 'username' not in session:
         return redirect(url_for('login'))
+        
+    try:
+        with connect_db() as conn:
+            cursor = conn.cursor()
+            # Get user_id
+            cursor.execute("SELECT id FROM users WHERE username = ?", (session['username'],))
+            user = cursor.fetchone()
+            
+            if user:
+                user_id = user[0]
+                # Get all saved items for this user
+                cursor.execute("""
+                    SELECT id, item_name, item_url, image_url 
+                    FROM saved_items 
+                    WHERE user_id = ?
+                    ORDER BY id DESC""", (user_id,))
+                
+                saved_items = []
+                for row in cursor.fetchall():
+                    saved_items.append({
+                        'id': row[0],
+                        'title': row[1],
+                        'url': row[2],
+                        'image_url': row[3]
+                    })
+                
+                return render_template('saved_items.html', 
+                                     saved_items=saved_items, 
+                                     username=session['username'])
+            else:
+                flash("User not found", "error")
+                return redirect(url_for('login'))
+    except sqlite3.Error as e:
+        flash(f"Database error: {str(e)}", "error")
+        return redirect(url_for('login'))
+    
+@app.route('/delete-item/<int:item_id>', methods=['POST'])
+def delete_item(item_id):
+    if 'username' not in session:
+        return {'status': 'error', 'message': 'Please log in to delete items.'}, 401
 
-    username = session['username']
     with connect_db() as conn:
         cursor = conn.cursor()
-        cursor.execute("SELECT id FROM users WHERE username = ?", (username,))
+        cursor.execute("SELECT id FROM users WHERE username = ?", (session['username'],))
         user = cursor.fetchone()
 
         if user:
             user_id = user[0]
-            cursor.execute("SELECT * FROM saved_items WHERE user_id = ?", (user_id,))
-            saved_items = cursor.fetchall()
-
-            return render_template('saved_items.html', saved_items=saved_items)
+            cursor.execute("DELETE FROM saved_items WHERE id = ? AND user_id = ?", 
+                         (item_id, user_id))
+            conn.commit()
+            return {'status': 'success', 'message': 'Item deleted successfully'}, 200
         else:
-            flash("User not found", "error")
-            return redirect(url_for('login'))
-
-
+            return {'status': 'error', 'message': 'User not found'}, 404
+        
 @app.route('/category')
 def category_main():
     if 'username' not in session:
@@ -327,4 +400,5 @@ def results():
 
 # Rest of the code remains the same
 if __name__ == '__main__':
+    init_db()
     app.run(debug=True, port=5000)

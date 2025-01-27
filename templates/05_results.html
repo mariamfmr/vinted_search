@@ -49,6 +49,9 @@
             padding: 1rem;
             text-align: center;
         }
+        .item-content {
+            cursor: pointer;
+        }
         .result-item img {
             max-width: 100%;
             border-radius: 8px;
@@ -63,13 +66,19 @@
             font-size: 0.9rem;
             color: #555;
         }
-        .result-item a {
-            text-decoration: none;
-            color: #017783;
-            font-weight: bold;
-            font-size: 1rem;
+        .save-item-button {
+            background-color: #017783;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 1rem;
         }
-        /* Profile Icon */
+        .save-item-button:hover {
+            background-color: #015b63;
+        }
         .profile-info {
             position: absolute;
             top: 20px;
@@ -91,8 +100,6 @@
         .profile-info:hover {
             background-color: #015b63;
         }
-
-        /* Sliding Panel */
         .sliding-panel {
             position: fixed;
             top: 0;
@@ -145,24 +152,25 @@
 </head>
 <body>
     <h1 class="title">VintedVision</h1>
-
-    <!-- Uploaded Image -->
     <div class="uploaded-image">
         <p class="subtitle">Uploaded Image</p>
         <img src="{{ url_for('static', filename='uploads/' + query) }}" alt="Uploaded Image">
     </div>
-
-    <!-- Results -->
     <div>
         <p class="subtitle">Similar Items</p>
         <div class="results-container">
             {% if results %}
                 {% for item in results %}
                     <div class="result-item">
-                        <img src="{{ item.image_url }}" alt="{{ item.title }}">
-                        <h3>{{ item.title }}</h3>
-                        <p>Similarity Score: {{ item.similarity | round(2) }}</p>
-                        <a href="{{ item.url }}" target="_blank">View Item</a>
+                        <div class="item-content" onclick="window.location.href='{{ item.url }}'">
+                            <img src="{{ item.image_url }}" alt="{{ item.title }}">
+                            <h3>{{ item.title }}</h3>
+                            <p>Similarity Score: {{ item.similarity | round(2) }}</p>
+                        </div>
+                        <button class="save-item-button" 
+                                onclick="saveItem('{{ item.url }}', '{{ item.image_url }}', '{{ item.title | replace('\'', '\\\'') }}', event)">
+                            Save Item
+                        </button>
                     </div>
                 {% endfor %}
             {% else %}
@@ -170,13 +178,10 @@
             {% endif %}
         </div>
     </div>
-    <!-- Profile Icon with Username -->
     <div class="profile-info" onclick="togglePanel()">
         <span>{{ username }}</span>
         <span class="icon">👤</span>
     </div>
-
-    <!-- Sliding Panel -->
     <div class="sliding-panel" id="slidingPanel">
         <h2>
             Welcome, {{ username }}!
@@ -185,11 +190,36 @@
         <button class="menu-button" onclick="window.location.href='{{ url_for('saved_items') }}'">My Items</button>
         <button class="menu-button">My Outfits</button>
     </div>
-
     <script>
         function togglePanel() {
             const panel = document.getElementById('slidingPanel');
             panel.classList.toggle('open');
+        }
+
+        function saveItem(itemUrl, imageUrl, title, event) {
+            event.preventDefault();
+            event.stopPropagation();
+            
+            fetch('/save-item', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    url: itemUrl, 
+                    image_url: imageUrl,
+                    title: title 
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    alert('Item saved successfully!');
+                } else {
+                    alert(data.message || 'Failed to save the item.');
+                }
+            })
+            .catch(() => alert('An error occurred. Please try again.'));
+            
+            return false;
         }
     </script>
 </body>
